@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>アニメ専門用語辞典 - 試作版 v3</title>
+<style>
+:root{
+  --bg:#f6f7f9;--panel:#fff;--line:#dde2e8;--text:#20242a;--muted:#687184;--accent:#315fcf;--accent-soft:#eef3ff;
+  --drawing:#fde8ef;--finish:#fff0d8;--photo:#e7f0ff;--production:#e6f6ee;--cg:#eee9fb;--direction:#fff8d9;
+  --danger:#a23c3c;--shadow:0 8px 24px rgba(25,35,55,.07)
+}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif;padding-bottom:58px}
+button,input,textarea,select{font:inherit} button{cursor:pointer}.hidden{display:none!important}
+.site-header{background:var(--panel);border-bottom:1px solid var(--line);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px;position:sticky;top:0;z-index:30}
+.brand h1{margin:0;font-size:1.35rem}.brand p{margin:3px 0 0;color:var(--muted);font-size:.84rem}.login{border:1px solid var(--line);background:#fafafa;color:var(--muted);border-radius:8px;padding:9px 12px}
+.main-nav{background:var(--panel);border-bottom:1px solid var(--line);padding:0 22px;display:flex;gap:4px;position:sticky;top:68px;z-index:29;overflow:auto}.nav-btn{border:0;background:transparent;padding:12px 14px;border-bottom:3px solid transparent;white-space:nowrap;color:#475063}.nav-btn.active{color:var(--accent);border-color:var(--accent);font-weight:700}
+.view{min-height:calc(100vh - 150px)}
+.app-layout{display:grid;grid-template-columns:210px minmax(0,1fr) 360px}.sidebar,.main-panel{padding:18px}.left-panel{background:var(--panel);border-right:1px solid var(--line)}.right-panel{background:var(--panel);border-left:1px solid var(--line)}
+.sidebar h2,.main-panel h2{font-size:1rem;margin:0 0 10px}.left-panel section+section{margin-top:24px}
+.button-list{display:grid;gap:7px}.filter-button{width:100%;text-align:left;border:1px solid transparent;border-radius:8px;padding:10px 11px;background:#f8f9fb}.filter-button.active{box-shadow:inset 0 0 0 2px rgba(49,95,207,.22);font-weight:700}.filter-button[data-cat="作画"]{background:var(--drawing)}.filter-button[data-cat="仕上げ"]{background:var(--finish)}.filter-button[data-cat="撮影"]{background:var(--photo)}.filter-button[data-cat="制作"]{background:var(--production)}.filter-button[data-cat="3DCG"]{background:var(--cg)}.filter-button[data-cat="制作・演出"]{background:var(--direction)}
+.kana-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}.kana-button{border:1px solid var(--line);background:var(--panel);border-radius:7px;padding:7px 0}.kana-button.active{background:var(--accent-soft);color:var(--accent)}
+.search-box{display:grid;grid-template-columns:1fr auto auto;gap:7px}.search-box input{min-width:0;border:1px solid #c9d0d9;border-radius:9px;padding:12px 13px;background:var(--panel)}.search-box button,.secondary-btn{border:1px solid var(--line);border-radius:9px;padding:0 13px;background:var(--panel)}.primary-btn{border:0;border-radius:9px;padding:11px 15px;background:var(--accent);color:#fff;font-weight:700}.search-note{color:var(--muted);font-size:.84rem;margin:7px 0 18px}.result-header{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:9px}.result-header h2{margin:0;font-size:1.08rem}.result-header span{font-size:.84rem;color:var(--muted)}
+.term-list{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:11px}.term-item{width:100%;border:0;border-bottom:1px solid var(--line);background:var(--panel);padding:14px 15px;text-align:left;display:grid;grid-template-columns:1fr auto;gap:10px}.term-item:last-child{border-bottom:0}.term-item:hover,.term-item.selected{background:#fafbff}.term-name{font-weight:700;color:var(--accent)}.term-reading,.term-summary{color:var(--muted);font-size:.84rem;margin-top:3px}.term-categories{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;align-self:center}.term-category,.category-badge{align-self:center;border-radius:999px;padding:5px 9px;font-size:.76rem;color:#4b5260;background:#f1f3f5}.term-category.primary,.category-badge.primary{font-weight:700;box-shadow:inset 0 0 0 1px rgba(50,55,70,.15)}.cat-作画{background:var(--drawing)}.cat-仕上げ{background:var(--finish)}.cat-撮影{background:var(--photo)}.cat-制作{background:var(--production)}.cat-3DCG{background:var(--cg)}.cat-制作・演出{background:var(--direction)}.cat-演出{background:var(--direction)}.cat-背景{background:#e8f5e9}.cat-編集{background:#f3e5f5}.cat-音響{background:#e0f7fa}.no-results{padding:30px 14px;text-align:center;color:var(--muted)}
+.empty-state{color:var(--muted);padding-top:18px}.detail-category-wrap{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px}.detail-category-note{font-size:.72rem;color:var(--muted);width:100%;margin-bottom:2px}.category-checks{display:flex;flex-wrap:wrap;gap:8px}.category-check{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:7px 10px;background:#fafbfc;font-size:.84rem}.category-check input{margin:0}.term-detail h2{font-size:1.45rem;margin:7px 0 0}.reading{color:var(--muted);margin:4px 0 16px}.translation-list{margin:0}.translation-list div{border-top:1px solid var(--line);padding:11px 0}.translation-list dt{font-size:.75rem;color:var(--muted)}.translation-list dd{margin:3px 0 0;font-weight:600}.term-detail section{border-top:1px solid var(--line);padding-top:14px;margin-top:8px}.term-detail h3{font-size:.9rem;margin:0 0 8px}.alias-list{display:flex;gap:6px;flex-wrap:wrap}.alias-chip{background:#f1f3f5;border-radius:999px;padding:5px 8px;font-size:.8rem}.description{line-height:1.75;margin:0}.detail-actions{display:flex;gap:7px;margin-top:14px}.edit-link{border:1px solid var(--line);background:var(--panel);padding:8px 10px;border-radius:8px}
+.translation-page,.editor-page{max-width:980px;margin:0 auto;padding:28px 20px}.page-title{margin:0 0 6px}.lead{margin:0 0 22px;color:var(--muted);line-height:1.7}.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;box-shadow:var(--shadow)}.translator-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.translator-grid label,.field label{display:block;font-weight:700;font-size:.87rem;margin-bottom:7px}.translator-grid select,.translator-grid textarea,.field input,.field textarea,.field select{width:100%;border:1px solid #cbd2da;border-radius:9px;padding:11px 12px;background:#fff}.translator-grid textarea{min-height:150px;resize:vertical}.translate-actions{display:flex;gap:8px;margin-top:14px}.translation-output{min-height:150px;border:1px solid var(--line);background:#fafbfc;border-radius:9px;padding:12px;line-height:1.7}.match-card{margin-top:12px;border-top:1px solid var(--line);padding-top:12px}.match-title{font-weight:700}.mini-note{font-size:.82rem;color:var(--muted);line-height:1.6;margin-top:10px}
+.editor-toolbar{display:flex;gap:8px;justify-content:space-between;align-items:center;margin-bottom:14px}.editor-toolbar select{min-width:260px;border:1px solid var(--line);border-radius:8px;padding:9px}.edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field.full{grid-column:1/-1}.field textarea{min-height:110px;resize:vertical}.editor-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.danger-btn{border:1px solid #e2bcbc;color:var(--danger);background:#fff7f7;border-radius:9px;padding:10px 13px}.status{margin-top:12px;font-size:.85rem;color:var(--muted)}
+.notice-bar{position:fixed;z-index:100;left:0;right:0;bottom:0;background:#fff9dc;border-top:1px solid #e6d690;color:#5c5227;padding:9px 16px;text-align:center;font-size:.78rem;line-height:1.45}
+@media(max-width:900px){body{padding-bottom:82px}.right-panel{scroll-margin-top:118px;min-height:calc(100vh - 118px)}.site-header{padding:12px 14px}.brand h1{font-size:1.15rem}.login{display:none}.main-nav{top:59px;padding:0 10px}.app-layout{display:flex;flex-direction:column}.left-panel{order:1;border:0;border-bottom:1px solid var(--line);padding:14px}.main-panel{order:2;padding:14px}.right-panel{order:3;border:0;border-top:1px solid var(--line);padding:16px 14px 28px}.button-list{display:flex;gap:7px;overflow-x:auto}.filter-button{width:auto;white-space:nowrap}.kana-grid{grid-template-columns:repeat(10,minmax(34px,1fr));overflow:auto}.search-box{grid-template-columns:1fr auto}.search-box input{grid-column:1/-1}.search-box button{min-height:42px}.translator-grid,.edit-grid{grid-template-columns:1fr}.field.full{grid-column:1}.translation-page,.editor-page{padding:20px 14px}.editor-toolbar{align-items:stretch;flex-direction:column}.editor-toolbar select{min-width:0;width:100%}.notice-bar{text-align:left;font-size:.73rem;padding:8px 10px}}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="brand"><h1>アニメ専門用語辞典</h1><p>日本電子専門学校 アニメ分野｜日本語・English・中文・한국어</p></div>
+  <button class="login" disabled>Googleログイン（後で実装）</button>
+</header>
+<nav class="main-nav">
+  <button class="nav-btn active" data-view="dictionary">辞典</button>
+  <button class="nav-btn" data-view="translate">専門用語翻訳</button>
+  <button class="nav-btn" data-view="editor">用語編集（試作）</button>
+</nav>
+
+<section id="dictionaryView" class="view">
+<main class="app-layout">
+  <aside class="sidebar left-panel">
+    <section><h2>カテゴリー</h2><div id="categoryList" class="button-list"></div></section>
+    <section><h2>五十音</h2><div id="kanaList" class="kana-grid"></div></section>
+  </aside>
+  <section class="main-panel">
+    <div class="search-box"><input id="searchInput" type="search" placeholder="用語を検索（例：二原、タイムシート）" autocomplete="off"><button id="searchButton">検索</button><button id="clearButton">クリア</button></div>
+    <p class="search-note">正式名称・読み・別名・英語・中国語・韓国語から検索できます。</p>
+    <div class="result-header"><h2 id="resultTitle">用語一覧</h2><span id="resultCount"></span></div>
+    <div id="termList" class="term-list"></div>
+  </section>
+  <aside class="sidebar right-panel">
+    <div id="detailEmpty" class="empty-state"><p>中央の用語を選ぶと、ここに詳細が表示されます。</p></div>
+    <article id="termDetail" class="term-detail hidden">
+      <div id="detailCategories" class="detail-category-wrap"></div><h2 id="detailJapanese"></h2><p id="detailReading" class="reading"></p>
+      <dl class="translation-list"><div><dt>English</dt><dd id="detailEnglish"></dd></div><div><dt>中文</dt><dd id="detailChinese"></dd></div><div><dt>한국어</dt><dd id="detailKorean"></dd></div></dl>
+      <section><h3>別名・検索ワード</h3><div id="detailAliases" class="alias-list"></div></section>
+      <section><h3>解説</h3><p id="detailDescription" class="description"></p></section>
+      <div class="detail-actions"><button id="editThisTerm" class="edit-link">この用語を編集</button></div>
+    </article>
+  </aside>
+</main>
+</section>
+
+<section id="translateView" class="view hidden">
+  <div class="translation-page">
+    <h2 class="page-title">専門用語翻訳</h2>
+    <p class="lead">登録済みのアニメ専門用語を照合して、日本語・英語・中国語・韓国語の対応語を表示します。</p>
+    <div class="card">
+      <div class="translator-grid">
+        <div><label for="sourceLang">入力言語</label><select id="sourceLang"><option value="auto">自動判定</option><option value="japanese">日本語</option><option value="english">English</option><option value="chinese">中文</option><option value="korean">한국어</option></select><textarea id="translateInput" placeholder="例：第二原画 / Second Key Animation / 二原"></textarea></div>
+        <div><label for="targetLang">翻訳先</label><select id="targetLang"><option value="english">English</option><option value="japanese">日本語</option><option value="chinese">中文</option><option value="korean">한국어</option></select><div id="translationOutput" class="translation-output">ここに対応する専門用語が表示されます。</div></div>
+      </div>
+      <div class="translate-actions"><button id="translateButton" class="primary-btn">専門用語を翻訳</button><button id="translateClear" class="secondary-btn">クリア</button></div>
+      <p class="mini-note">試作版では「辞典に登録済みの専門用語」の翻訳に対応しています。文章全体を自然に翻訳する機械翻訳は、学校で利用する外部サービスの方針を決めた後に接続できます。</p>
+    </div>
+  </div>
+</section>
+
+<section id="editorView" class="view hidden">
+  <div class="editor-page">
+    <h2 class="page-title">用語編集（試作）</h2>
+    <p class="lead">新規登録だけでなく、既存の用語・解説・翻訳を選択して書き換えられます。将来は指定された <strong>@jec.ac.jp</strong> アカウントだけ、この画面を表示する想定です。</p>
+    <div class="card">
+      <div class="editor-toolbar"><div><strong>編集する用語</strong></div><select id="editorTermSelect"></select><button id="newTermButton" class="secondary-btn">＋ 新規登録</button></div>
+      <form id="termForm">
+        <div class="edit-grid">
+          <div class="field"><label>日本語 *</label><input id="formJapanese" required></div>
+          <div class="field"><label>読み</label><input id="formReading"></div>
+          <div class="field"><label>English</label><input id="formEnglish"></div>
+          <div class="field"><label>中文</label><input id="formChinese"></div>
+          <div class="field"><label>한국어</label><input id="formKorean"></div>
+          <div class="field"><label>主カテゴリー</label><select id="formPrimaryCategory"><option>作画</option><option>演出</option><option>背景</option><option>撮影</option><option>仕上げ</option><option>制作</option><option>3DCG</option><option>編集</option><option>音響</option></select></div><div class="field full"><label>関連カテゴリー（複数選択可）</label><div id="formCategoryChecks" class="category-checks"></div><div class="mini-note">主カテゴリー以外で、この用語を知っておくべき分野を選択します。カテゴリー検索では主・関連のどちらからでも見つかります。</div></div>
+          <div class="field full"><label>別名・検索ワード（カンマ区切り）</label><input id="formAliases" placeholder="例：二原, 2原, 第二原"></div>
+          <div class="field full"><label>解説</label><textarea id="formDescription"></textarea></div>
+        </div>
+        <div class="editor-actions"><button class="primary-btn" type="submit">保存する</button><button id="deleteTermButton" class="danger-btn" type="button">この用語を削除</button><button id="resetDataButton" class="secondary-btn" type="button">試作データに戻す</button></div>
+        <div id="editorStatus" class="status">※ 試作版の変更内容は、このブラウザ内にのみ保存されます。</div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<div class="notice-bar">本ページは日本電子専門学校 アニメ分野の学生・教職員向けです。掲載内容の無断転載・共有、スクリーンショット等による学外への持ち出しはお控えください。</div>
+
+<script>
+const ALL_CATEGORIES=['作画','演出','背景','撮影','仕上げ','制作','3DCG','編集','音響'];
+const INITIAL_TERMS=[
+{id:1,japanese:'第二原画',reading:'だいにげんが',english:'Second Key Animation',chinese:'第二原画（仮）',korean:'제2원화（仮）',primaryCategory:'作画',categories:['作画'],aliases:['二原','2原','第二原','２原'],description:'原画工程を補助するために、原画の修正や追加の作画を行う工程・作業を指す言葉。作品や現場によって運用の仕方が異なる場合があります。'},
+{id:2,japanese:'原画',reading:'げんが',english:'Key Animation',chinese:'原画（仮）',korean:'원화（仮）',primaryCategory:'作画',categories:['作画'],aliases:['原画マン','key animation'],description:'動きの要点となる絵を描く工程、またはその絵。'},
+{id:3,japanese:'動画',reading:'どうが',english:'In-between Animation',chinese:'动画（仮）',korean:'동화（仮）',primaryCategory:'作画',categories:['作画'],aliases:['中割り','in-between'],description:'原画と原画の間の動きをつなぐための絵を作成する工程。'},
+{id:4,japanese:'タイムシート',reading:'たいむしーと',english:'Exposure Sheet / X-Sheet',chinese:'摄影表（仮）',korean:'타임시트（仮）',primaryCategory:'演出',categories:['演出','作画','撮影'],aliases:['シート','X-sheet','xsheet'],description:'画やセル、カメラ、セリフなどのタイミングを記録・指示する表。'},
+{id:5,japanese:'BG引き',reading:'びーじーびき',english:'BG Pull / Background Pull（仮）',chinese:'（仮）',korean:'（仮）',primaryCategory:'演出',categories:['演出','作画','背景','撮影'],aliases:['BG引き','背景引き','bg引き'],description:'背景素材の移動やカメラワークに関わる指示として使われる用語。工程をまたいで共有されるため、演出・作画・背景・撮影の各分野で理解しておく必要があります。'}
+];
+let terms=loadTerms(),selectedId=null,currentCategory='すべて',currentKana='すべて';
+function normalizeTerm(t){
+  const old=t.category;
+  const primary=t.primaryCategory||old||'作画';
+  let cats=Array.isArray(t.categories)?t.categories.slice():(old?[old]:[primary]);
+  if(!cats.includes(primary))cats.unshift(primary);
+  return {...t,primaryCategory:primary,categories:[...new Set(cats.filter(Boolean))]};
+}
+function loadTerms(){try{return (JSON.parse(localStorage.getItem('jecAnimeTerms'))||structuredClone(INITIAL_TERMS)).map(normalizeTerm)}catch(e){return JSON.parse(JSON.stringify(INITIAL_TERMS)).map(normalizeTerm)}}
+function saveTerms(){localStorage.setItem('jecAnimeTerms',JSON.stringify(terms))}
+function norm(v){return String(v||'').normalize('NFKC').toLowerCase().replace(/\s+/g,'')}
+function catClass(c){return 'cat-'+String(c||'').replace(/\s/g,'')}
+const categories=['すべて',...ALL_CATEGORIES];
+const kanaGroups=[['すべて','全'],['あ','あ'],['か','か'],['さ','さ'],['た','た'],['な','な'],['は','は'],['ま','ま'],['や','や'],['ら','ら'],['わ','わ']];
+const kanaRanges={あ:/^[あ-おア-オ]/,か:/^[か-ごカ-ゴ]/,さ:/^[さ-ぞサ-ゾ]/,た:/^[た-どタ-ド]/,な:/^[な-のナ-ノ]/,は:/^[は-ぽハ-ポ]/,ま:/^[ま-もマ-モ]/,や:/^[や-よヤ-ヨ]/,ら:/^[ら-ろラ-ロ]/,わ:/^[わ-んワ-ン]/};
+function initFilters(){const c=document.getElementById('categoryList');c.innerHTML='';categories.forEach(cat=>{const b=document.createElement('button');b.className='filter-button'+(cat==='すべて'?' active':'');b.dataset.cat=cat;b.textContent=cat;b.onclick=()=>{currentCategory=cat;[...c.children].forEach(x=>x.classList.toggle('active',x===b));renderTerms()};c.appendChild(b)});const k=document.getElementById('kanaList');k.innerHTML='';kanaGroups.forEach(([key,label])=>{const b=document.createElement('button');b.className='kana-button'+(key==='すべて'?' active':'');b.textContent=label;b.onclick=()=>{currentKana=key;[...k.children].forEach(x=>x.classList.toggle('active',x===b));renderTerms()};k.appendChild(b)})}
+function filtered(){const q=norm(document.getElementById('searchInput').value);return terms.filter(t=>{if(currentCategory!=='すべて'&&!t.categories.includes(currentCategory))return false;if(currentKana!=='すべて'&&!(kanaRanges[currentKana]||/.*/).test(t.reading||t.japanese))return false;if(!q)return true;const hay=[t.japanese,t.reading,t.english,t.chinese,t.korean,t.primaryCategory,...t.categories,...(t.aliases||[])].map(norm).join('|');return hay.includes(q)})}
+function categoryBadges(t,compact=false){return t.categories.map(c=>`<span class="${compact?'term-category':'category-badge'} ${c===t.primaryCategory?'primary ':''}${catClass(c)}">${esc(c)}</span>`).join('')}
+function renderTerms(){const list=document.getElementById('termList'),items=filtered();document.getElementById('resultCount').textContent=items.length+'件';list.innerHTML='';if(!items.length){list.innerHTML='<div class="no-results">該当する用語がありません。</div>';return}items.forEach(t=>{const b=document.createElement('button');b.className='term-item'+(t.id===selectedId?' selected':'');b.innerHTML=`<div><div class="term-name">${esc(t.japanese)}</div><div class="term-reading">${esc(t.reading)}</div><div class="term-summary">${esc(t.description)}</div></div><div class="term-categories">${categoryBadges(t,true)}</div>`;b.onclick=()=>showDetail(t.id);list.appendChild(b)})}
+function showDetail(id){selectedId=id;const t=terms.find(x=>x.id===id);if(!t)return;document.getElementById('detailEmpty').classList.add('hidden');document.getElementById('termDetail').classList.remove('hidden');document.getElementById('detailCategories').innerHTML=`<div class="detail-category-note">主カテゴリーは太字表示／関連カテゴリーを含みます</div>${categoryBadges(t)}`;['Japanese','Reading','English','Chinese','Korean','Description'].forEach(k=>document.getElementById('detail'+k).textContent=t[k.toLowerCase()]||'—');document.getElementById('detailAliases').innerHTML=(t.aliases||[]).map(a=>`<span class="alias-chip">${esc(a)}</span>`).join('')||'<span class="alias-chip">なし</span>';renderTerms();if(innerWidth<=900){const target=document.querySelector('.right-panel');requestAnimationFrame(()=>{const y=target.getBoundingClientRect().top+window.scrollY-112;window.scrollTo({top:y,behavior:'smooth'})})}}
+function esc(s){return String(s??'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]))}
+document.getElementById('searchInput').addEventListener('input',renderTerms);document.getElementById('searchInput').addEventListener('keydown',e=>{if(e.key==='Enter')renderTerms()});document.getElementById('searchButton').onclick=renderTerms;document.getElementById('clearButton').onclick=()=>{document.getElementById('searchInput').value='';currentCategory='すべて';currentKana='すべて';initFilters();renderTerms()};
+
+const views={dictionary:document.getElementById('dictionaryView'),translate:document.getElementById('translateView'),editor:document.getElementById('editorView')};function switchView(v){Object.entries(views).forEach(([k,el])=>el.classList.toggle('hidden',k!==v));document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===v));if(v==='editor')refreshEditorSelect()}
+document.querySelectorAll('.nav-btn').forEach(b=>b.onclick=()=>switchView(b.dataset.view));document.getElementById('editThisTerm').onclick=()=>{switchView('editor');refreshEditorSelect(selectedId)};
+
+function termText(t,lang){return t[lang]||'（未登録）'}
+function findTerm(query,source){const q=norm(query);if(!q)return null;return terms.find(t=>{let vals=[];if(source==='auto')vals=[t.japanese,t.reading,t.english,t.chinese,t.korean,...(t.aliases||[])];else vals=[t[source],...(source==='japanese'?(t.aliases||[]):[])];return vals.some(v=>norm(v)===q)})||terms.find(t=>[t.japanese,t.reading,t.english,t.chinese,t.korean,...(t.aliases||[])].some(v=>norm(v).includes(q)||q.includes(norm(v))))}
+function doTranslate(){const input=document.getElementById('translateInput').value.trim(),source=document.getElementById('sourceLang').value,target=document.getElementById('targetLang').value,out=document.getElementById('translationOutput');const t=findTerm(input,source);if(!input){out.textContent='入力してください。';return}if(!t){out.innerHTML='<strong>登録済みの専門用語から一致を見つけられませんでした。</strong><br><span style="color:#687184">辞典へ追加するか、別名・表記を変えて検索してください。</span>';return}out.innerHTML=`<div class="match-title">${esc(termText(t,target))}</div><div class="match-card"><strong>${esc(t.japanese)}</strong><br><span style="color:#687184">${esc(t.primaryCategory)}｜${esc(t.english||'')}</span><p style="margin-bottom:0">${esc(t.description||'')}</p></div>`}
+document.getElementById('translateButton').onclick=doTranslate;document.getElementById('translateInput').addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter')doTranslate()});document.getElementById('translateClear').onclick=()=>{document.getElementById('translateInput').value='';document.getElementById('translationOutput').textContent='ここに対応する専門用語が表示されます。'};
+
+let editingId=null;
+function initCategoryChecks(){const wrap=document.getElementById('formCategoryChecks');wrap.innerHTML=ALL_CATEGORIES.map(c=>`<label class="category-check ${catClass(c)}"><input type="checkbox" value="${esc(c)}">${esc(c)}</label>`).join('')}
+function refreshEditorSelect(selectId){const s=document.getElementById('editorTermSelect');s.innerHTML=terms.map(t=>`<option value="${t.id}">${esc(t.japanese)}（${esc(t.primaryCategory)}）</option>`).join('');const id=selectId||editingId||terms[0]?.id;if(id){s.value=String(id);loadForm(Number(id))}else clearForm()}
+function loadForm(id){editingId=id;const t=terms.find(x=>x.id===id);if(!t)return;document.getElementById('formJapanese').value=t.japanese||'';document.getElementById('formReading').value=t.reading||'';document.getElementById('formEnglish').value=t.english||'';document.getElementById('formChinese').value=t.chinese||'';document.getElementById('formKorean').value=t.korean||'';document.getElementById('formPrimaryCategory').value=t.primaryCategory||'作画';document.querySelectorAll('#formCategoryChecks input').forEach(cb=>cb.checked=t.categories.includes(cb.value)&&cb.value!==t.primaryCategory);document.getElementById('formAliases').value=(t.aliases||[]).join(', ');document.getElementById('formDescription').value=t.description||'';document.getElementById('deleteTermButton').disabled=false}
+function clearForm(){editingId=null;document.getElementById('termForm').reset();document.querySelectorAll('#formCategoryChecks input').forEach(cb=>cb.checked=false);document.getElementById('deleteTermButton').disabled=true;document.getElementById('editorStatus').textContent='新しい用語を入力して「保存する」を押してください。'}
+document.getElementById('editorTermSelect').onchange=e=>loadForm(Number(e.target.value));document.getElementById('newTermButton').onclick=clearForm;
+document.getElementById('formPrimaryCategory').addEventListener('change',()=>{const p=document.getElementById('formPrimaryCategory').value;document.querySelectorAll('#formCategoryChecks input').forEach(cb=>{if(cb.value===p)cb.checked=false})});
+document.getElementById('termForm').onsubmit=e=>{e.preventDefault();const primary=document.getElementById('formPrimaryCategory').value;const related=[...document.querySelectorAll('#formCategoryChecks input:checked')].map(cb=>cb.value).filter(c=>c!==primary);const obj={id:editingId||Date.now(),japanese:document.getElementById('formJapanese').value.trim(),reading:document.getElementById('formReading').value.trim(),english:document.getElementById('formEnglish').value.trim(),chinese:document.getElementById('formChinese').value.trim(),korean:document.getElementById('formKorean').value.trim(),primaryCategory:primary,categories:[primary,...related],aliases:document.getElementById('formAliases').value.split(/[,、]/).map(x=>x.trim()).filter(Boolean),description:document.getElementById('formDescription').value.trim()};if(editingId){const i=terms.findIndex(x=>x.id===editingId);terms[i]=obj}else{terms.push(obj);editingId=obj.id}saveTerms();renderTerms();refreshEditorSelect(editingId);document.getElementById('editorStatus').textContent='保存しました。このブラウザ内の試作データに反映されています。'};
+document.getElementById('deleteTermButton').onclick=()=>{if(!editingId)return;if(!confirm('この用語を削除しますか？'))return;terms=terms.filter(t=>t.id!==editingId);saveTerms();selectedId=null;renderTerms();refreshEditorSelect();document.getElementById('editorStatus').textContent='削除しました。'};document.getElementById('resetDataButton').onclick=()=>{if(!confirm('編集内容を破棄して、最初の試作データに戻しますか？'))return;terms=JSON.parse(JSON.stringify(INITIAL_TERMS)).map(normalizeTerm);saveTerms();selectedId=null;renderTerms();refreshEditorSelect();document.getElementById('editorStatus').textContent='試作データに戻しました。'};
+
+initCategoryChecks();initFilters();renderTerms();refreshEditorSelect();
+</script>
+</body>
+</html>
